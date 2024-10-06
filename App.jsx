@@ -1,24 +1,24 @@
 import React from 'react';
-import Header from './header';
-import Banner from './banner';
-import VideoSection from './videosection';
-import MenuSection from './menusection';
-import MenuItem from './menuitem';
-import GallerySection from './gallerysection';
-import ReviewSection from './reviewsection';
-import Footer from './footer';
+import Header from './components/header';
+import Hero from './components/hero';
+import About from './components/about';
+import WhyUs from './components/whyus';
+import Menu from './components/menu';
+import ReservationForm from './components/reservation';
+import ReservationForm from './components/contactsection';
+
 
 const App = () => {
   return (
-    <div>
+    <>
       <Header />
-      <Banner />
-      <VideoSection />
-      <MenuSection />
-      <GallerySection />
-      <ReviewSection />
-      <Footer />
-    </div>
+      <Hero />
+      <About />
+      <WhyUs />
+      <Menu />
+      <ReservationForm />
+      <ContactSection />
+    </>
   );
 };
 
