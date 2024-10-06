@@ -1,28 +1,87 @@
+
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const app = express();
-const port = 3000;
+const profilesPath = './profiles.json'; 
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json()); 
 
-// Middleware to parse URL-encoded data
-app.use(express.urlencoded({ extended: true }));
 
-// Serve an HTML form at the root URL
-app.get('/', (req, res) => {
-    res.send(`
-        <form action="/hello" method="POST">
-            <label for="name">Enter your name:</label>
-            <input type="text" id="name" name="name" required>
-            <button type="submit">Submit</button>
-        </form>
-    `);
+
+// task 1
+app.get('/hello/amjad', (req, res) => {
+    res.send('Hello, Amjad');
 });
 
-// Handle the POST request to /hello
-app.post('/hello', (req, res) => {
-    const name = req.body.name; // Get the name from the form data
-    res.send(`Hello, ${name}.`);
+
+//task 2,3
+app.post('/profile', (req, res) => {
+    const profile = req.body;
+    const requiredFields = ["Name", "Title", "Targeted Keywords", "Education", "Certification", "Contact"];
+    const missingFields = requiredFields.filter(field => !profile[field]);
+
+    if (missingFields.length > 0) {
+        return res.status(400).json({
+            error: "Missing required fields",
+            missing_fields: missingFields
+        });
+    }
+
+    saveProfile(profile, res);
 });
 
-// Start the server
-app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
+//task 4
+const saveProfile = (profile, res) => {
+    fs.readFile(profilesPath, 'utf-8', (err, data) => {
+        if (err && err.code === 'ENOENT') {
+            // Create profiles.json if it doesn't exist
+            return fs.writeFile(profilesPath, JSON.stringify([profile], null, 4), (writeErr) => {
+                if (writeErr) {
+                    return res.status(500).json({ error: "Failed to create profiles file" });
+                }
+                res.status(201).json({ message: "Profile saved successfully" });
+            });
+        }
+
+        if (err) {
+            return res.status(500).json({ error: "Error reading profiles file" });
+        }
+
+        let profiles;
+        try {
+            profiles = JSON.parse(data);
+        } catch (parseErr) {
+            return res.status(500).json({ error: "Error parsing profiles file" });
+        }
+
+        profiles.push(profile);
+
+        fs.writeFile(profilesPath, JSON.stringify(profiles, null, 4), (writeErr) => {
+            if (writeErr) {
+                return res.status(500).json({ error: "Failed to save profile" });
+            }
+            res.status(201).json({ message: "Profile saved successfully" });
+        });
+    });
+};
+
+// task 5
+app.get('/profiles', (req, res) => {
+    fs.readFile(profilesPath, 'utf-8', (err, data) => {
+        if (err && err.code === 'ENOENT') {
+            return res.status(200).json([]);
+        }
+
+        if (err) {
+            return res.status(500).json({ error: "Failed to retrieve profiles" });
+        }
+
+        const profiles = JSON.parse(data);
+        res.status(200).json(profiles);
+    });
+});
+
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
 });
